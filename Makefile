@@ -153,7 +153,7 @@ QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
 	then echo "-gdb tcp::$(GDBPORT)"; \
 	else echo "-s -p $(GDBPORT)"; fi)
 ifndef CPUS
-CPUS := 3
+CPUS := 1
 endif
 
 QEMUOPTS = -machine virt -bios none -kernel $K/kernel -m 128M -smp $(CPUS) -nographic
@@ -169,5 +169,11 @@ qemu: $K/kernel fs.img
 
 qemu-gdb: $K/kernel .gdbinit fs.img
 	@echo "*** Now run 'gdb' in another window." 1>&2
+	sed -i 's/target remote 127.0.0.1:26000/@REM target remote 127.0.0.1:26000/' .gdbinit
 	$(QEMU) $(QEMUOPTS) -S $(QEMUGDB)
 
+gdb-multiarch:
+	gdb-multiarch kernel/kernel -ex "target remote 127.0.0.1:26000"
+
+lint:
+	./scripts/Lindent ./**/*.c
